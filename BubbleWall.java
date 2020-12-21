@@ -28,7 +28,8 @@ public class BubbleWall
 
 
 	private Bubble[][] bubs;
-	private int[][] info;
+	private int[][] info; // info[r][c] == 0 if a bubble does not exist.
+						  // info[r][c] == bubble's colorChooser otherwise
 
 	public BubbleWall()
 	{
@@ -104,12 +105,8 @@ public class BubbleWall
 		return bubs[r][c];
 	}
 
-	public boolean isOccupied(Point p)
-	{
-		return info[p.getR()][p.getC()] > 0;
-	}
-
-	public boolean shouldBubbleStop(Bubble b)
+	// returns true if the bubble stopped, false otherwise
+	public boolean receiveBubble(Bubble b)
 	{
 		Point loc = computeLocation(b);
 		int row = loc.getR();
@@ -117,23 +114,21 @@ public class BubbleWall
 
 		int span = 2;
 		int padding = 5;
+		int marginOfError = 2 * BUBBLE_RADIUS + GAP + padding;
 
 		for (int r = row - span; r <= row + span; r++)
 		{
 			for (int c = col - span; c <= col + span; c++)
 			{
-				if (r >= 0 && c >= 0 && r < bubs.length && c < bubs[0].length)
+				if (isValid(r, c))
 				{	
 					Bubble cur = bubs[r][c];
 
-					if (cur.exists())
+					if (cur.exists() && cur.distFrom(b) <= marginOfError)
 					{
-						double dist = cur.distFrom(b);
-						boolean desiredDistanceRange = dist <= 2 * BUBBLE_RADIUS + GAP + padding;
-						if (desiredDistanceRange)
-						{
-							return true;
-						}
+						setBubble(b, row, col);
+						destroyMatchingNeighbors(row, col);
+						return true;
 					}
 				}
 
@@ -141,117 +136,15 @@ public class BubbleWall
 		}
 		return false;
 	}
-
-
-	public boolean shouldBubbleStop2(Bubble b)
+	
+	public boolean isValid(int row, int col)
 	{
-		Point loc = computeLocation(b);
-		int row = loc.getR();
-		int col = loc.getC();
-
-		// if row or col is out of bounds, return false
-		if (row < 0 || row >= bubs.length || col < 0 || col >= bubs[0].length)
-		{
-			return false;
-		}
-
-		// check adjacent locations on same row
-		if (col > 0 && info[row][col - 1] > 0)
-		{
-			return true;
-		}
-		if (col < NUM_BUBBLES_ACROSS - 1 && info[row][col + 1] > 0)
-		{
-			return true;
-		}
-
-		//check row above
-		if (row % 2 == 1)
-		{
-			// check [row-1][col], [row-1][col+1]
-			if (info[row - 1][col] > 0)
-			{
-				return true;
-			}
-			if (col < NUM_BUBBLES_ACROSS - 1 && info[row - 1][col + 1] > 0)
-			{
-				return true;
-			}
-
-		}
-		else if (row > 0) // row is even, but not 0
-		{
-			if (col > 0 && info[row - 1][col] > 0)
-			{
-				return true;
-			}
-			if (info[row - 1][col] > 0)
-			{
-				return true;
-			}
-		}
-		return false;
+		return row >= 0 && col >= 0 && row < bubs.length && col < bubs[0].length;
 	}
 
-	public Point closestLocation2(Bubble b)
-	{
-		boolean keepGoing = true;
-		Point closest = new Point(-1,-1); // return row & col values of -1 if no point is close enough
-		double closestDistance = Double.MAX_VALUE;
-
-		for (int row = 0; row < TOTAL_BUBBLES_DOWN && keepGoing; row++)
-		{
-			for (int col = 0; col < NUM_BUBBLES_ACROSS && keepGoing; col++)
-			{
-				Bubble cur = bubs[row][col];
-				if (cur.exists())
-				{
-					double dist = cur.distFrom(b);
-					boolean desiredDistanceRange = dist <= BUBBLE_RADIUS + GAP + b.getRadius() && 
-							dist >=  BUBBLE_RADIUS + b.getRadius();
-							if (desiredDistanceRange && dist < closestDistance)
-							{
-								closest = new Point(row, col);
-								closestDistance = dist;
-							}
-				}
-			}
-		}
-		return closest;
-	}
-	public Point computeLikelyLocation(Bubble b)
-	{
-		double x = b.getX();
-		double y = b.getY();
-
-		// reverse computation from buildBubbleArray() to find row
-		int arrayCornerY = TITLE_BAR + GAP / 2 + BUBBLE_RADIUS;
-		int spacingY = (int) ((BUBBLE_RADIUS + GAP / 2) * Math.sqrt(3)); // 30-60-90 calculation
-		int row = (int) (y - arrayCornerY) / spacingY;
-		
-		if (row >= bubs.length) row = bubs.length - 1;
-		if (row < 0) row = 0;
-
-
-		// reverse computation again to find col
-		int arrayCornerX = GAP / 2 + BUBBLE_RADIUS;
-		if (row % 2 == 1) 
-		{
-			arrayCornerX = 2 * BUBBLE_RADIUS + GAP; // shift leftmost edge of row if it's odd
-		}
-		int spacingX = 2 * BUBBLE_RADIUS + GAP;
-		int col = (int) (x - arrayCornerX) / spacingX;
-
-
-		if (col >= bubs[0].length) col = bubs[0].length - 1;
-		if (col < 0) col = 0;
-
-		return new Point(row, col);
-
-	}
 	public Point computeLocation(Bubble b)
 	{
-		
+
 		Point closest = new Point(-1,-1); // return row & col values of -1 if no point is close enough
 		double closestDistance = Double.MAX_VALUE;
 
@@ -272,15 +165,28 @@ public class BubbleWall
 		}
 		return closest;
 	}
-
-	public void setBubble(Bubble b, Point loc)
+	
+	public void destroyMatchingNeighbors(int row, int col)
 	{
-		int r = loc.getR();
-		int c = loc.getC();
+		int color = bubs[row][col].getColorChooser();
+		
+		boolean[][] seen = new boolean[bubs.length][bubs[0].length];
+		
 
-		bubs[r][c].setExists(true);
-		bubs[r][c].setColor(b.getColor());
-		info[r][c] = b.getColorChooser();
+	}
+	
+	public void deleteBubble(int row, int col)
+	{
+		bubs[row][col].setExists(false);
+		info[row][col] = 0;
+	}
+	
+
+	public void setBubble(Bubble b, int row, int col)
+	{
+		bubs[row][col].setExists(true);
+		bubs[row][col].setColor(b.getColor());
+		info[row][col] = b.getColorChooser();
 	}
 
 	public void draw(Graphics g)

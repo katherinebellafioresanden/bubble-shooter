@@ -223,7 +223,7 @@ public class Bubble
 		if (!exists)
 		{
 			// bubble
-			g.setColor(new Color(253, 253, 253));
+			g.setColor(new Color(253, 253, 253)); // light light grey
 			g.fillOval((int) (x - radius), (int) (y - radius), 2 * radius, 2 * radius);
 			return;
 		}

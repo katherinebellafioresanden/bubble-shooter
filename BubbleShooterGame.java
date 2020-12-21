@@ -85,16 +85,9 @@ implements ActionListener, MouseListener, MouseMotionListener
 
 
 		// check if bubble hit wall
-		if (wall.shouldBubbleStop(tempBub))
+		if (wall.receiveBubble(tempBub))
 		{
 			tempBub.stopFlying();
-
-			// figure out where in the array we currently are
-			Point currentLoc = wall.computeLocation(tempBub);
-
-			// the flying bubble now joins the wall at THAT location in the array
-			wall.setBubble(tempBub, currentLoc);
-
 		}
 
 
