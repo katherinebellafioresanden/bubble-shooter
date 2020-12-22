@@ -1,4 +1,6 @@
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 
 
@@ -22,6 +24,8 @@ public class BubbleWall
 	// TOTAL_BUBBLES_DOWN includes invisible bubbles all the way to the bottom of screen
 	private static final double HEIGHT_OF_2_LAYERS = 2 * BUBBLE_RADIUS + (BUBBLE_RADIUS + GAP / 2) * Math.sqrt(3);
 	private static final int TOTAL_BUBBLES_DOWN = (int) (SCREEN_HEIGHT / HEIGHT_OF_2_LAYERS * 2);
+	
+	private static final int MATCHING_NEIGHBOR_THRESHOLD = 3;
 
 
 	// ------------- instance variables -------------
@@ -67,12 +71,13 @@ public class BubbleWall
 				// a Bubble is born!!!
 				bubs[row][col] = new Bubble(centerX, centerY, BUBBLE_RADIUS);
 				info[row][col] = bubs[row][col].getColorChooser();
+				// System.out.println("building wall. r = " + row + ", c = " + col + ", info = " + info[row][col]);
 
 				// all bubbles from here down should be non-existent
 				if (row >= NUM_BUBBLES_DOWN)
 				{
 					bubs[row][col].setExists(false);
-					info[row][col] = 0;
+					info[row][col] = -1;
 				}
 			}
 		}
@@ -172,15 +177,94 @@ public class BubbleWall
 		
 		boolean[][] seen = new boolean[bubs.length][bubs[0].length];
 		
+		List<int[]> toDelete = bfs(seen, color, row, col);
+		
+		for (int[] pos : toDelete)
+		{
+			int r = pos[0];
+			int c = pos[1];
+			
+			deleteBubble(r, c);
+		}
+		
 
+	}
+	
+	public List<int[]> bfs(boolean[][] seen, int color, int row, int col)
+	{
+		List<int[]> spotsToDelete = new ArrayList<>();
+		
+		int matchingNeighborCount = 0; 
+		
+		Queue<int[]> queue = new LinkedList<>();
+		queue.offer(new int[] {row, col});
+		
+		while (!queue.isEmpty())
+		{
+			// pop off the first element in the queue
+			int[] curr = queue.remove();
+			int r = curr[0];
+			int c = curr[1];
+				
+			// process this element
+			seen[r][c] = true;
+			matchingNeighborCount++;
+			spotsToDelete.add(new int[] {r, c});
+			
+			
+			// define directions of neighbors
+			List<int[]> directions = new ArrayList<>();
+			directions.addAll(Arrays.asList(
+					new int[] {-1, 0}, 
+					new int[] {1, 0}, 
+					new int[] {0, -1},
+					new int[] {0, 1}));
+			
+			if (r % 2 == 1) // if row number is odd, this is a right-shifted row
+			{
+				directions.add(new int[] {-1, 1}); // upper right
+				directions.add(new int[] {1, 1}); // lower right
+			}
+			else // even row number.  this is NOT a right-shifted row
+			{
+				directions.add(new int[] {-1, -1}); // upper left
+				directions.add(new int[] {-1, -1}); // lower left
+			}
+			
+			// explore neighbors
+			for (int[] dir : directions)
+			{
+				
+				int newR = r + dir[0];
+				int newC = c + dir[1];
+				
+				// if this neighbor is worth exploring:
+				// position is valid, exists, not seen before, 
+				// and has matching color
+				if (isValid(newR, newC) && 
+						!seen[newR][newC] && 
+						info[newR][newC] == color)
+				{
+					queue.offer(new int[] {newR, newC});
+				}
+			}
+		}
+		
+		if (matchingNeighborCount >= MATCHING_NEIGHBOR_THRESHOLD)
+		{
+			return spotsToDelete;
+		}
+		
+		// return an empty list if we didn't reach the threshold
+		return new ArrayList<>(); 
+		
 	}
 	
 	public void deleteBubble(int row, int col)
 	{
 		bubs[row][col].setExists(false);
-		info[row][col] = 0;
+		info[row][col] = -1;
 	}
-	
 
 	public void setBubble(Bubble b, int row, int col)
 	{

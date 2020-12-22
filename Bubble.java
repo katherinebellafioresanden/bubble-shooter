@@ -7,6 +7,7 @@ public class Bubble
 	public static final Random GEN = new Random();
 
 	// list of possible colors for a Bubble
+	public static final int NUM_COLORS = 6;
 	public static final int BLUE = 0;
 	public static final int CYAN = 1;
 	public static final int GREEN = 2;
@@ -21,8 +22,7 @@ public class Bubble
 	private double dx, dy; // speed of Bubble, usually 0
 	private boolean doneFlying = false; // only used for shooting bubbles
 	private static int radius;
-	private int colorChooser; // for comparing colors
-	private Color color;
+	private int color; 
 	
 	// details about wall Bubbles
 	private boolean exists = true; 
@@ -35,14 +35,14 @@ public class Bubble
 		x = xIn;
 		y = yIn;
 		radius = radiusIn;
-		color = chooseRandomColor();
+		color = GEN.nextInt(NUM_COLORS);
 		dx = 0;
 		dy = 0;
 
 	}
 
 	// SETTERS *****************************************************
-	public void setColor(Color newColor)
+	public void setColor(int newColor)
 	{
 		color = newColor;
 	}
@@ -66,38 +66,7 @@ public class Bubble
 		
 		if (newStatus == false)
 		{
-			colorChooser = -1; // if it doesn't exist, it shouldn't have a color
-		}
-		else // newStatus is TRUE
-		{
-			if (Color.BLUE.equals(color))
-			{
-				colorChooser = BLUE;
-			}
-			else if (Color.CYAN.equals(color))
-			{
-				colorChooser = CYAN;
-			}
-			else if (Color.GREEN.equals(color))
-			{
-				colorChooser = GREEN;
-			}
-			else if (Color.MAGENTA.equals(color))
-			{
-				colorChooser = MAGENTA;
-			}
-			else if (Color.RED.equals(color))
-			{
-				colorChooser = RED;
-			}
-			else if (Color.YELLOW.equals(color))
-			{
-				colorChooser = YELLOW;
-			}
-			else
-			{
-				System.out.println("in setExists() and something's wrong with color.");
-			}
+			color = -1; // if it doesn't exist, it shouldn't have a color
 		}
 	}
 	
@@ -141,14 +110,14 @@ public class Bubble
 		return dy;
 	}
 
-	public Color getColor()
+	public int getColor()
 	{
 		return color;
 	}
 
 	public int getColorChooser()
 	{
-		return colorChooser;
+		return color;
 	}
 	
 	public int getRadius()
@@ -208,7 +177,7 @@ public class Bubble
 
 	public boolean isSameColorAs(Bubble otherBub)
 	{
-		if (colorChooser == otherBub.getColorChooser())
+		if (color == otherBub.getColorChooser())
 		{
 			return true;
 		}
@@ -229,7 +198,8 @@ public class Bubble
 		}
 
 		// bubble
-		g.setColor(color);
+		Color c = chooseColor();
+		g.setColor(c);
 		g.fillOval((int) (x - radius), (int) (y - radius), 2 * radius, 2 * radius);
 
 		// sun reflection
@@ -237,6 +207,19 @@ public class Bubble
 		g.setColor(Color.white);
 		g.fillOval((int) (x - radius / 2 - miniR), (int) (y - radius / 2 - miniR), miniR * 2, miniR * 2);
 
+	}
+	
+	public Color chooseColor()
+	{
+		if (color == BLUE) return Color.BLUE;
+		if (color == CYAN) return Color.CYAN;
+		if (color == GREEN) return Color.GREEN;
+		if (color == MAGENTA) return Color.MAGENTA;
+		if (color == RED) return Color.RED;
+		if (color == YELLOW) return Color.YELLOW;
+		
+		System.out.println("something's wrong with color chooser");
+		return Color.BLACK;
 	}
 
 	public void move()
@@ -254,34 +237,48 @@ public class Bubble
 			dx = -dx;
 		}
 	}
+	
+	public Color darken(Color c)
+	{
+		//System.out.println("darkening bubble with x = " + x + ", y = " + y);
+		int red = c.getRed();
+		int green = c.getGreen();
+		int blue = c.getBlue();
+		
+		return new Color(
+				Math.max(red - 50,  0),
+				Math.max(green - 50, 0),
+				Math.max(blue - 50, 0));		
+				
+	}
 
 	public Color chooseRandomColor()
 	{
 		// generate one of the 6 final colors
-		colorChooser = GEN.nextInt(6); 
+		color = GEN.nextInt(6) + 1; 
 	
 		// assign color
-		if (colorChooser == BLUE)
+		if (color == BLUE)
 		{
 			return Color.BLUE;
 		}
-		else if (colorChooser == CYAN)
+		else if (color == CYAN)
 		{
 			return Color.CYAN;
 		}
-		else if (colorChooser == GREEN)
+		else if (color == GREEN)
 		{
 			return Color.GREEN;
 		}
-		else if (colorChooser == MAGENTA)
+		else if (color == MAGENTA)
 		{
 			return Color.MAGENTA;
 		}
-		else if (colorChooser == RED)
+		else if (color == RED)
 		{
 			return Color.RED;
 		}
-		else if (colorChooser == YELLOW)
+		else if (color == YELLOW)
 		{
 			return Color.YELLOW;
 		}
