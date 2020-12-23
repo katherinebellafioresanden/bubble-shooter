@@ -139,6 +139,16 @@ public class BubbleWall
 
 			}
 		}
+		
+		// now check to see if bubble is at top of screen
+		if (row == 0)
+		{
+			setBubble(b, row, col);
+			// no need to destroyMatchingNeighbors bc there are none
+			return true;
+			
+		}
+		
 		return false;
 	}
 	
