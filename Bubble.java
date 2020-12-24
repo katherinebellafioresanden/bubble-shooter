@@ -15,6 +15,8 @@ public class Bubble
 	public static final int RED = 4;
 	public static final int YELLOW = 5;
 	
+	private static Color nonexistentColor;
+	
 	// ------DATA-------
 
 	// private details about each Bubble
@@ -43,6 +45,21 @@ public class Bubble
 		color = GEN.nextInt(NUM_COLORS);
 		dx = 0;
 		dy = 0;
+		
+	}
+	
+	public static void initializeNonexistentColor()
+	{
+		int offset = 5;
+		// color for nonexistent bubbles
+		if (BubbleShooterGame.BACKGROUND_COLOR.equals(Color.BLACK))
+		{
+			nonexistentColor = new Color(offset, offset, offset);
+		}
+		else
+		{
+			nonexistentColor = new Color(255 - offset, 255 - offset, 255 - offset);
+		}
 
 	}
 
@@ -192,7 +209,7 @@ public class Bubble
 		if (existence == NONEXISTENT)
 		{
 			// bubble
-			g.setColor(new Color(253, 253, 253)); // light light grey
+			g.setColor(nonexistentColor); // light light grey
 			g.fillOval((int) (x - radius), (int) (y - radius), 2 * radius, 2 * radius);
 		}
 		else // if it EXISTS or PARTIALLY EXISTS

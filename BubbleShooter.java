@@ -55,7 +55,12 @@ public class BubbleShooter
 	
 	public void draw(Graphics g)
 	{
+
 		g.setColor(Color.BLACK);
+		if (BubbleShooterGame.BACKGROUND_COLOR.equals(Color.BLACK))
+		{
+			g.setColor(Color.WHITE);
+		}
 		
 		int sectionLength = ARROW_LENGTH / (ARROW_SECTIONS * 2);
 	

@@ -18,7 +18,8 @@ extends JFrame
 implements ActionListener, MouseListener, MouseMotionListener 
 {
 	// screen info
-	public static final Color BACKGROUND_COLOR = Color.white;
+	public static final Color BACKGROUND_COLOR = Color.black;
+
 	public static final int SCREEN_WIDTH = 800;
 	public static final int SCREEN_HEIGHT = 700;
 	public static final int TITLE_BAR = 23;
@@ -241,6 +242,10 @@ implements ActionListener, MouseListener, MouseMotionListener
 
 			// display score
 			g.setColor(Color.BLACK);
+			if (BACKGROUND_COLOR.equals(Color.black))
+			{
+				g.setColor(Color.white);
+			}
 			g.setFont(new Font("Arial", Font.BOLD, 20));
 			g.drawString("Current score: " + score, SCREEN_WIDTH - 300, SCREEN_HEIGHT - 40);
 		}

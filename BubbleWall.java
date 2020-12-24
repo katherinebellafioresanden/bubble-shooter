@@ -42,6 +42,8 @@ public class BubbleWall
 
 	public BubbleWall()
 	{
+		Bubble.initializeNonexistentColor();
+		
 		bubs = new Bubble[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		info = new int[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		numBubblesDestroyed = 0;
@@ -221,7 +223,6 @@ public class BubbleWall
 			int c = pos[1];
 			
 			deleteBubble(r, c);
-			System.out.println("Just deleted bubble at row " + r + ", col " + c);
 		}
 		
 		// wipe toDelete
