@@ -34,11 +34,14 @@ public class BubbleWall
 	private Bubble[][] bubs;
 	private int[][] info; // info[r][c] == 0 if a bubble does not exist.
 						  // info[r][c] == bubble's colorChooser otherwise
+	
+	private int numBubblesDestroyed;
 
 	public BubbleWall()
 	{
 		bubs = new Bubble[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		info = new int[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
+		numBubblesDestroyed = 0;
 
 		buildBubbleArray();
 	}
@@ -104,6 +107,11 @@ public class BubbleWall
 	{
 		return bubs[p.getR()][p.getC()];
 	}
+	
+	public int getNumBubblesDestroyed()
+	{
+		return numBubblesDestroyed;
+	}
 
 	public Bubble getBubbleAt(int r, int c)
 	{
@@ -132,7 +140,7 @@ public class BubbleWall
 					if (cur.exists() && cur.distFrom(b) <= marginOfError)
 					{
 						setBubble(b, row, col);
-						destroyMatchingNeighbors(row, col);
+						numBubblesDestroyed +=destroyMatchingNeighbors(row, col);
 						return true;
 					}
 				}
@@ -181,7 +189,7 @@ public class BubbleWall
 		return closest;
 	}
 	
-	public void destroyMatchingNeighbors(int row, int col)
+	public int destroyMatchingNeighbors(int row, int col)
 	{
 		int color = bubs[row][col].getColorChooser();
 		
@@ -196,7 +204,7 @@ public class BubbleWall
 			
 			deleteBubble(r, c);
 		}
-		
+		return toDelete.size(); // return the number of bubbles destroyed
 
 	}
 	
