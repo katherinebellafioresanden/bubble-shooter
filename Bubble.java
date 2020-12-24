@@ -25,8 +25,13 @@ public class Bubble
 	private int color; 
 	
 	// details about wall Bubbles
-	private boolean exists = true; 
+	public static final int EXISTS = 1;
+	public static final int PARTIAL = 2;
+	public static final int NONEXISTENT = 3;
+	
+	private int existence = 1; 
 	private boolean available = false;
+	private boolean partiallyPopped = false;
 	
 	// ------METHODS-------
 
@@ -60,14 +65,9 @@ public class Bubble
 		dx = 0;
 	}
 
-	public void setExists(boolean newStatus)
+	public void setExists(int newStatus)
 	{
-		exists = newStatus;
-		
-		if (newStatus == false)
-		{
-			color = -1; // if it doesn't exist, it shouldn't have a color
-		}
+		existence = newStatus;
 	}
 	
 	
@@ -92,7 +92,7 @@ public class Bubble
 
 	public boolean exists()
 	{
-		return exists;
+		return existence == EXISTS;
 	}
 
 	public double getX()
@@ -120,7 +120,7 @@ public class Bubble
 		return color;
 	}
 	
-	public int getRadius()
+	public static int getRadius()
 	{
 		return radius;
 	}
@@ -189,23 +189,39 @@ public class Bubble
 	public void draw(Graphics g)
 	{	
 		// non existent bubbles should not be drawn
-		if (!exists)
+		if (existence == NONEXISTENT)
 		{
 			// bubble
 			g.setColor(new Color(253, 253, 253)); // light light grey
 			g.fillOval((int) (x - radius), (int) (y - radius), 2 * radius, 2 * radius);
-			return;
+		}
+		else // if it EXISTS or PARTIALLY EXISTS
+		{
+			// bubble
+			Color c = chooseColor();
+			g.setColor(c);
+			g.fillOval((int) (x - radius), (int) (y - radius), 2 * radius, 2 * radius);
+
+			// sun reflection
+			int miniR = radius / 5;
+			g.setColor(Color.white);
+			g.fillOval((int) (x - radius / 2 - miniR), (int) (y - radius / 2 - miniR), miniR * 2, miniR * 2);
+			
+			
+			// coverup if needed
+			if (existence == PARTIAL)
+			{
+				double coverUpRadius = radius * 0.8;
+				g.setColor(BubbleShooterGame.BACKGROUND_COLOR);
+				
+				g.fillOval((int) (x - coverUpRadius), 
+						(int) (y - coverUpRadius), 
+						(int) (2 * coverUpRadius), 
+						(int) (2 * coverUpRadius));
+			}
 		}
 
-		// bubble
-		Color c = chooseColor();
-		g.setColor(c);
-		g.fillOval((int) (x - radius), (int) (y - radius), 2 * radius, 2 * radius);
-
-		// sun reflection
-		int miniR = radius / 5;
-		g.setColor(Color.white);
-		g.fillOval((int) (x - radius / 2 - miniR), (int) (y - radius / 2 - miniR), miniR * 2, miniR * 2);
+		
 
 	}
 	

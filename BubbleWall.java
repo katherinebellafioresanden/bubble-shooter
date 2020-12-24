@@ -36,12 +36,16 @@ public class BubbleWall
 						  // info[r][c] == bubble's colorChooser otherwise
 	
 	private int numBubblesDestroyed;
+	private List<int[]> toDelete;
+	
+	
 
 	public BubbleWall()
 	{
 		bubs = new Bubble[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		info = new int[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		numBubblesDestroyed = 0;
+		toDelete = new ArrayList<>();
 
 		buildBubbleArray();
 	}
@@ -79,7 +83,7 @@ public class BubbleWall
 				// all bubbles from here down should be non-existent
 				if (row >= NUM_BUBBLES_DOWN)
 				{
-					bubs[row][col].setExists(false);
+					bubs[row][col].setExists(Bubble.NONEXISTENT);
 					info[row][col] = -1;
 				}
 			}
@@ -101,11 +105,6 @@ public class BubbleWall
 		}
 
 		return true;
-	}
-
-	public Bubble getBubbleAt(Point p)
-	{
-		return bubs[p.getR()][p.getC()];
 	}
 	
 	public int getNumBubblesDestroyed()
@@ -148,7 +147,7 @@ public class BubbleWall
 			}
 		}
 		
-		// now check to see if bubble is at top of screen
+		// now check to see if bubble is at top of screen, alone
 		if (row == 0)
 		{
 			setBubble(b, row, col);
@@ -195,17 +194,38 @@ public class BubbleWall
 		
 		boolean[][] seen = new boolean[bubs.length][bubs[0].length];
 		
-		List<int[]> toDelete = bfs(seen, color, row, col);
+		toDelete = bfs(seen, color, row, col);
 		
+		partiallyDeleteBubbles();
+
+		return toDelete.size(); // return the number of bubbles destroyed
+
+	}
+	
+	public void partiallyDeleteBubbles()
+	{
+		for (int[] pos : toDelete)
+		{
+			int r = pos[0];
+			int c = pos[1];
+			
+			partiallyDeleteBubble(r, c);
+		}
+	}
+	
+	public void fullyDeleteBubbles()
+	{
 		for (int[] pos : toDelete)
 		{
 			int r = pos[0];
 			int c = pos[1];
 			
 			deleteBubble(r, c);
+			System.out.println("Just deleted bubble at row " + r + ", col " + c);
 		}
-		return toDelete.size(); // return the number of bubbles destroyed
-
+		
+		// wipe toDelete
+		toDelete = new ArrayList<>();
 	}
 	
 	public List<int[]> bfs(boolean[][] seen, int color, int row, int col)
@@ -280,13 +300,19 @@ public class BubbleWall
 	
 	public void deleteBubble(int row, int col)
 	{
-		bubs[row][col].setExists(false);
+		bubs[row][col].setExists(Bubble.NONEXISTENT);
+		info[row][col] = -1;
+	}
+	
+	public void partiallyDeleteBubble(int row, int col)
+	{
+		bubs[row][col].setExists(Bubble.PARTIAL);
 		info[row][col] = -1;
 	}
 
 	public void setBubble(Bubble b, int row, int col)
 	{
-		bubs[row][col].setExists(true);
+		bubs[row][col].setExists(Bubble.EXISTS);
 		bubs[row][col].setColor(b.getColor());
 		info[row][col] = b.getColorChooser();
 	}
@@ -301,6 +327,7 @@ public class BubbleWall
 				bubs[row][col].draw(g);
 			}
 		}
+		
 	}
 
 }

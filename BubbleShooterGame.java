@@ -18,6 +18,7 @@ extends JFrame
 implements ActionListener, MouseListener, MouseMotionListener 
 {
 	// screen info
+	public static final Color BACKGROUND_COLOR = Color.white;
 	public static final int SCREEN_WIDTH = 800;
 	public static final int SCREEN_HEIGHT = 700;
 	public static final int TITLE_BAR = 23;
@@ -45,6 +46,8 @@ implements ActionListener, MouseListener, MouseMotionListener
 	private static Stack<Point> matchingNeighbors = new Stack<Point>();
 	private static int matchingNeighborCount = 0; // used to make sure there are at least 3 matching neighbors to destroy a bubble
 
+	private static int actionPerformedCount = 0;
+	
 	public static void main(String[] args)
 	{
 		// create the objects
@@ -72,6 +75,8 @@ implements ActionListener, MouseListener, MouseMotionListener
 
 	public void actionPerformed(ActionEvent e)
 	{
+		actionPerformedCount++;
+		
 		// check if won
 		if (wall.isEmpty())
 		{
@@ -79,6 +84,13 @@ implements ActionListener, MouseListener, MouseMotionListener
 			repaint();
 			return;
 		}
+		
+		// check if there are bubbles to finish off (fully delete)
+		if (actionPerformedCount % 2 == 0)
+		{
+			wall.fullyDeleteBubbles();
+		}
+		
 
 		tempBub.move();
 		tempBub.bounce(0, SCREEN_WIDTH);
@@ -222,7 +234,7 @@ implements ActionListener, MouseListener, MouseMotionListener
 
 		if (state == PLAYING)
 		{
-			clearScreen(g, Color.WHITE);
+			clearScreen(g, BACKGROUND_COLOR);
 			wall.draw(g);
 			bubShooter.draw(g);
 			tempBub.draw(g);
