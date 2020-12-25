@@ -31,7 +31,7 @@ public class Bubble
 	public static final int PARTIAL = 2;
 	public static final int NONEXISTENT = 3;
 
-	public static final int PHASE_LIMIT = 12;
+	public static final int PHASE_LIMIT = 10;
 	public int phase = 0; // phase for partially existing bubbles to fade out
 	
 	private int existence = 1; 

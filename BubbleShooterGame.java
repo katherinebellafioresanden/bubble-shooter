@@ -24,7 +24,7 @@ implements ActionListener, MouseListener, MouseMotionListener
 	public static final int SCREEN_HEIGHT = 700;
 	public static final int TITLE_BAR = 23;
 	public static final int DELAY_IN_MILLISEC = 20;
-	public static final int VELOCITY = 17;
+	public static final int VELOCITY = 18;
 	public static final int BUBBLE_RADIUS = BubbleWall.BUBBLE_RADIUS;
 
 	// states of the game 

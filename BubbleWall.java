@@ -12,7 +12,7 @@ public class BubbleWall
 	private static final int TITLE_BAR = BubbleShooterGame.TITLE_BAR;
 
 	private static final int NUM_BUBBLES_ACROSS = 15;
-	private static final int NUM_BUBBLES_DOWN = 5;
+	private static final int NUM_BUBBLES_DOWN = 6;
 	private static final double BUBBLE_PERVASIVENESS = 0.9; 
 	// a value of 1 would mean there are no gaps in the bubble array
 
@@ -82,8 +82,7 @@ public class BubbleWall
 				// a Bubble is born!!!
 				bubs[row][col] = new Bubble(centerX, centerY, BUBBLE_RADIUS);
 				info[row][col] = bubs[row][col].getColorChooser();
-				// System.out.println("building wall. r = " + row + ", c = " + col + ", info = " + info[row][col]);
-
+				
 				// all bubbles from here down should be non-existent
 				if (row >= NUM_BUBBLES_DOWN)
 				{
@@ -200,12 +199,6 @@ public class BubbleWall
 
 		toDelete = bfs(seen, color, row, col);
 
-		if (toDelete.size() > 0)
-		{
-			System.out.println("destroyMathcingNeighbors(): deletePhase = " + 
-					deletePhase);
-		}
-
 		partiallyDeleteBubbles();
 
 		return toDelete.size(); // return the number of bubbles destroyed
@@ -216,9 +209,6 @@ public class BubbleWall
 	public void partiallyDeleteBubbles()
 	{
 		if (toDelete.size() == 0) return;
-
-		System.out.println("partiallyDeleteBubbles(): deletePhase = " + 
-				deletePhase);
 		
 		for (int[] pos : toDelete)
 		{
@@ -234,17 +224,12 @@ public class BubbleWall
 	{
 		if (toDelete.size() == 0) return;
 
-		System.out.println("deletePhase = " + deletePhase);
-
 		for (int[] pos : toDelete)
 		{
 			int r = pos[0];
 			int c = pos[1];
 
 			bubs[r][c].setPhase(deletePhase);
-
-			System.out.println("r = " + r + ", c = " + c);
-			bubs[r][c].displayPhaseDebug();
 		}		
 		deletePhase++;
 
@@ -259,8 +244,6 @@ public class BubbleWall
 		if (toDelete.size() == 0) return;
 
 		deletePhase = 0;
-		System.out.println("--------GOT HERE, deletePhase = " 
-				+ deletePhase + " ---------");
 
 		for (int[] pos : toDelete)
 		{
@@ -278,7 +261,6 @@ public class BubbleWall
 
 	public List<int[]> bfs(boolean[][] seen, int color, int row, int col)
 	{
-		System.out.println("bfs(): deletePhase = " + deletePhase);
 
 		List<int[]> spotsToDelete = new ArrayList<>();
 
@@ -333,28 +315,19 @@ public class BubbleWall
 						!seen[newR][newC] && 
 						info[newR][newC] == color)
 				{
-					//System.out.println("seen[" + newR + "][" + newC + "] = " + seen[newR][newC]);
-					//System.out.println("bfs: just added (" + newR + "," + newC + ") to queue");
 					queue.offer(new int[] {newR, newC});
 					seen[newR][newC] = true;
 				}
 			}
 		}
 
-		System.out.println("bfs found " + spotsToDelete.size() + " matching neighbors");
-
 		if (matchingNeighborCount >= MATCHING_NEIGHBOR_THRESHOLD)
 		{
-
-			System.out.println("now printing toDelete list:");
 			for (int[] pos : spotsToDelete)
 			{
 				int r = pos[0];
 				int c = pos[1];
-
-				System.out.println("  bubble at r = " + r + ", c = " + c);
 			}
-			System.out.println("- - - - - - - -");	
 
 			return spotsToDelete;
 		}
