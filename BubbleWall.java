@@ -24,7 +24,7 @@ public class BubbleWall
 	// TOTAL_BUBBLES_DOWN includes invisible bubbles all the way to the bottom of screen
 	private static final double HEIGHT_OF_2_LAYERS = 2 * BUBBLE_RADIUS + (BUBBLE_RADIUS + GAP / 2) * Math.sqrt(3);
 	private static final int TOTAL_BUBBLES_DOWN = (int) (SCREEN_HEIGHT / HEIGHT_OF_2_LAYERS * 2);
-	
+
 	private static final int MATCHING_NEIGHBOR_THRESHOLD = 3;
 
 
@@ -33,21 +33,23 @@ public class BubbleWall
 
 	private Bubble[][] bubs;
 	private int[][] info; // info[r][c] == 0 if a bubble does not exist.
-						  // info[r][c] == bubble's colorChooser otherwise
-	
+	// info[r][c] == bubble's colorChooser otherwise
+
 	private int numBubblesDestroyed;
 	private List<int[]> toDelete;
-	
-	
+	private int deletePhase;
+
+
 
 	public BubbleWall()
 	{
 		Bubble.initializeNonexistentColor();
-		
+
 		bubs = new Bubble[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		info = new int[TOTAL_BUBBLES_DOWN][NUM_BUBBLES_ACROSS];
 		numBubblesDestroyed = 0;
 		toDelete = new ArrayList<>();
+		deletePhase = 0;
 
 		buildBubbleArray();
 	}
@@ -108,7 +110,7 @@ public class BubbleWall
 
 		return true;
 	}
-	
+
 	public int getNumBubblesDestroyed()
 	{
 		return numBubblesDestroyed;
@@ -148,19 +150,19 @@ public class BubbleWall
 
 			}
 		}
-		
+
 		// now check to see if bubble is at top of screen, alone
 		if (row == 0)
 		{
 			setBubble(b, row, col);
 			// no need to destroyMatchingNeighbors bc there are none
 			return true;
-			
+
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean isValid(int row, int col)
 	{
 		return row >= 0 && col >= 0 && row < bubs.length && col < bubs[0].length;
@@ -189,68 +191,115 @@ public class BubbleWall
 		}
 		return closest;
 	}
-	
+
 	public int destroyMatchingNeighbors(int row, int col)
 	{
 		int color = bubs[row][col].getColorChooser();
-		
+
 		boolean[][] seen = new boolean[bubs.length][bubs[0].length];
-		
+
 		toDelete = bfs(seen, color, row, col);
-		
+
+		if (toDelete.size() > 0)
+		{
+			System.out.println("destroyMathcingNeighbors(): deletePhase = " + 
+					deletePhase);
+		}
+
 		partiallyDeleteBubbles();
 
 		return toDelete.size(); // return the number of bubbles destroyed
 
 	}
-	
+
+	// try combining these three methods with an abstract class or interface
 	public void partiallyDeleteBubbles()
 	{
+		if (toDelete.size() == 0) return;
+
+		System.out.println("partiallyDeleteBubbles(): deletePhase = " + 
+				deletePhase);
+		
 		for (int[] pos : toDelete)
 		{
 			int r = pos[0];
 			int c = pos[1];
-			
-			partiallyDeleteBubble(r, c);
+
+			bubs[r][c].setExists(Bubble.PARTIAL);
+			info[r][c] = -1;
 		}
 	}
-	
+
+	public void incrementPhaseOfBubbles()
+	{
+		if (toDelete.size() == 0) return;
+
+		System.out.println("deletePhase = " + deletePhase);
+
+		for (int[] pos : toDelete)
+		{
+			int r = pos[0];
+			int c = pos[1];
+
+			bubs[r][c].setPhase(deletePhase);
+
+			System.out.println("r = " + r + ", c = " + c);
+			bubs[r][c].displayPhaseDebug();
+		}		
+		deletePhase++;
+
+		if (deletePhase == Bubble.PHASE_LIMIT)
+		{
+			fullyDeleteBubbles();
+		}
+	}
+
 	public void fullyDeleteBubbles()
 	{
+		if (toDelete.size() == 0) return;
+
+		deletePhase = 0;
+		System.out.println("--------GOT HERE, deletePhase = " 
+				+ deletePhase + " ---------");
+
 		for (int[] pos : toDelete)
 		{
 			int r = pos[0];
 			int c = pos[1];
-			
-			deleteBubble(r, c);
+
+			bubs[r][c].setExists(Bubble.NONEXISTENT);
+			bubs[r][c].setPhase(deletePhase);
+			info[r][c] = -1;
+
 		}
-		
-		// wipe toDelete
 		toDelete = new ArrayList<>();
+
 	}
-	
+
 	public List<int[]> bfs(boolean[][] seen, int color, int row, int col)
 	{
+		System.out.println("bfs(): deletePhase = " + deletePhase);
+
 		List<int[]> spotsToDelete = new ArrayList<>();
-		
+
 		int matchingNeighborCount = 0; 
-		
+
 		Queue<int[]> queue = new LinkedList<>();
 		queue.offer(new int[] {row, col});
-		
+		seen[row][col] = true;
+
 		while (!queue.isEmpty())
 		{
 			// pop off the first element in the queue
 			int[] curr = queue.remove();
 			int r = curr[0];
 			int c = curr[1];
-				
+
 			// process this element
-			seen[r][c] = true;
 			matchingNeighborCount++;
 			spotsToDelete.add(new int[] {r, c});
-			
-			
+
+
 			// define directions of neighbors
 			List<int[]> directions = new ArrayList<>();
 			directions.addAll(Arrays.asList(
@@ -258,7 +307,7 @@ public class BubbleWall
 					new int[] {1, 0}, 
 					new int[] {0, -1},
 					new int[] {0, 1}));
-			
+
 			if (r % 2 == 1) // if row number is odd, this is a right-shifted row
 			{
 				directions.add(new int[] {-1, 1}); // upper right
@@ -269,14 +318,14 @@ public class BubbleWall
 				directions.add(new int[] {-1, -1}); // upper left
 				directions.add(new int[] {-1, -1}); // lower left
 			}
-			
+
 			// explore neighbors
 			for (int[] dir : directions)
 			{
-				
+
 				int newR = r + dir[0];
 				int newC = c + dir[1];
-				
+
 				// if this neighbor is worth exploring:
 				// position is valid, exists, not seen before, 
 				// and has matching color
@@ -284,31 +333,45 @@ public class BubbleWall
 						!seen[newR][newC] && 
 						info[newR][newC] == color)
 				{
+					//System.out.println("seen[" + newR + "][" + newC + "] = " + seen[newR][newC]);
+					//System.out.println("bfs: just added (" + newR + "," + newC + ") to queue");
 					queue.offer(new int[] {newR, newC});
+					seen[newR][newC] = true;
 				}
 			}
 		}
-		
+
+		System.out.println("bfs found " + spotsToDelete.size() + " matching neighbors");
+
 		if (matchingNeighborCount >= MATCHING_NEIGHBOR_THRESHOLD)
 		{
+
+			System.out.println("now printing toDelete list:");
+			for (int[] pos : spotsToDelete)
+			{
+				int r = pos[0];
+				int c = pos[1];
+
+				System.out.println("  bubble at r = " + r + ", c = " + c);
+			}
+			System.out.println("- - - - - - - -");	
+
 			return spotsToDelete;
 		}
-		
+
 		// return an empty list if we didn't reach the threshold
 		return new ArrayList<>(); 
-		
+
 	}
-	
+
 	public void deleteBubble(int row, int col)
 	{
-		bubs[row][col].setExists(Bubble.NONEXISTENT);
-		info[row][col] = -1;
+
 	}
-	
+
 	public void partiallyDeleteBubble(int row, int col)
 	{
-		bubs[row][col].setExists(Bubble.PARTIAL);
-		info[row][col] = -1;
+
 	}
 
 	public void setBubble(Bubble b, int row, int col)
@@ -328,7 +391,7 @@ public class BubbleWall
 				bubs[row][col].draw(g);
 			}
 		}
-		
+
 	}
 
 }

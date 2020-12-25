@@ -30,6 +30,9 @@ public class Bubble
 	public static final int EXISTS = 1;
 	public static final int PARTIAL = 2;
 	public static final int NONEXISTENT = 3;
+
+	public static final int PHASE_LIMIT = 12;
+	public int phase = 0; // phase for partially existing bubbles to fade out
 	
 	private int existence = 1; 
 	private boolean available = false;
@@ -85,6 +88,10 @@ public class Bubble
 	public void setExists(int newStatus)
 	{
 		existence = newStatus;
+		if (existence == NONEXISTENT)
+		{
+			phase = 0; // reset phase of this bubble
+		}
 	}
 	
 	
@@ -228,7 +235,8 @@ public class Bubble
 			// coverup if needed
 			if (existence == PARTIAL)
 			{
-				double coverUpRadius = radius * 0.8;
+				double coverUpRadius = computeCoverUpRadius();
+				
 				g.setColor(BubbleShooterGame.BACKGROUND_COLOR);
 				
 				g.fillOval((int) (x - coverUpRadius), 
@@ -236,10 +244,26 @@ public class Bubble
 						(int) (2 * coverUpRadius), 
 						(int) (2 * coverUpRadius));
 			}
-		}
+		}	
 
+	}
+	
+	
+	private double computeCoverUpRadius()
+	{
+		double goal = 1;
+		double start = .2;
+		double increment = (goal - start) / PHASE_LIMIT;
+		double multiplier = Math.min(1, start + increment * phase);
 		
-
+		double coverUpRadius = radius * multiplier;
+		
+		return coverUpRadius;
+	}
+	
+	public void displayPhaseDebug()
+	{
+		System.out.println("phase = " + phase);
 	}
 	
 	public Color chooseColor()
@@ -269,20 +293,6 @@ public class Bubble
 		{
 			dx = -dx;
 		}
-	}
-	
-	public Color darken(Color c)
-	{
-		//System.out.println("darkening bubble with x = " + x + ", y = " + y);
-		int red = c.getRed();
-		int green = c.getGreen();
-		int blue = c.getBlue();
-		
-		return new Color(
-				Math.max(red - 50,  0),
-				Math.max(green - 50, 0),
-				Math.max(blue - 50, 0));		
-				
 	}
 
 	public Color chooseRandomColor()
@@ -321,6 +331,11 @@ public class Bubble
 			return Color.BLACK;
 		}
 
+	}
+
+	public void setPhase(int deletePhase) 
+	{
+		phase = deletePhase;
 	}
 
 }

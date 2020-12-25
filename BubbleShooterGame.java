@@ -75,9 +75,7 @@ implements ActionListener, MouseListener, MouseMotionListener
 
 
 	public void actionPerformed(ActionEvent e)
-	{
-		actionPerformedCount++;
-		
+	{	
 		// check if won
 		if (wall.isEmpty())
 		{
@@ -86,11 +84,7 @@ implements ActionListener, MouseListener, MouseMotionListener
 			return;
 		}
 		
-		// check if there are bubbles to finish off (fully delete)
-		if (actionPerformedCount % 2 == 0)
-		{
-			wall.fullyDeleteBubbles();
-		}
+
 		
 
 		tempBub.move();
@@ -119,6 +113,8 @@ implements ActionListener, MouseListener, MouseMotionListener
 			tempBub = createBubble();
 		}
 
+		// fade out and delete certain bubbles
+		wall.incrementPhaseOfBubbles();
 		repaint();
 
 	}
