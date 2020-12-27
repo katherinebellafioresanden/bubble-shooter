@@ -130,6 +130,8 @@ public class BubbleWall
 		int span = 2;
 		int padding = 5;
 		int marginOfError = 2 * BUBBLE_RADIUS + GAP + padding;
+		
+
 
 		for (int r = row - span; r <= row + span; r++)
 		{
@@ -154,7 +156,7 @@ public class BubbleWall
 		if (row == 0)
 		{
 			setBubble(b, row, col);
-			// no need to destroyMatchingNeighbors bc there are none
+			numBubblesDestroyed +=destroyMatchingNeighbors(row, col);
 			return true;
 
 		}
@@ -285,10 +287,10 @@ public class BubbleWall
 			// define directions of neighbors
 			List<int[]> directions = new ArrayList<>();
 			directions.addAll(Arrays.asList(
-					new int[] {-1, 0}, 
-					new int[] {1, 0}, 
-					new int[] {0, -1},
-					new int[] {0, 1}));
+					new int[] {-1, 0}, // up
+					new int[] {1, 0}, // down
+					new int[] {0, -1}, // left
+					new int[] {0, 1})); // right
 
 			if (r % 2 == 1) // if row number is odd, this is a right-shifted row
 			{
@@ -298,7 +300,7 @@ public class BubbleWall
 			else // even row number.  this is NOT a right-shifted row
 			{
 				directions.add(new int[] {-1, -1}); // upper left
-				directions.add(new int[] {-1, -1}); // lower left
+				directions.add(new int[] {1, -1}); // lower left
 			}
 
 			// explore neighbors
