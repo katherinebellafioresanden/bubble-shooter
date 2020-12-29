@@ -20,7 +20,7 @@ implements ActionListener, MouseListener, MouseMotionListener
 	// screen info
 	public static final Color BACKGROUND_COLOR = Color.black;
 
-	public static final int SCREEN_WIDTH = 800;
+	public static final int SCREEN_WIDTH = 770;
 	public static final int SCREEN_HEIGHT = 700;
 	public static final int TITLE_BAR = 23;
 	public static final int DELAY_IN_MILLISEC = 20;

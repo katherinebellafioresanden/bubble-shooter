@@ -13,7 +13,7 @@ public class BubbleWall
 
 	private static final int NUM_BUBBLES_ACROSS = 15;
 	private static final int NUM_BUBBLES_DOWN = 6;
-	private static final double BUBBLE_PERVASIVENESS = 0.9; 
+	private static final double BUBBLE_PERVASIVENESS = 0.91; 
 	// a value of 1 would mean there are no gaps in the bubble array
 
 	private static final double BUBBLE_DIAMETER_AND_GAP = SCREEN_WIDTH / (NUM_BUBBLES_ACROSS + 0.5); 
